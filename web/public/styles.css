@@ -1,46 +1,706 @@
+/* ==========================================================================
+   VTTU — Valtion Työ- ja Tuotantounioni
+   Design system per doc/aesthetics.md, doc/aerodynamics.md, doc/dazzle.md.
+
+   No framework, no build step beyond tsc. The whole vocabulary lives in the
+   :root block below; everything else references it with var(...).
+   ========================================================================== */
+
 :root {
-  color-scheme: light dark;
+  /* Greys — clean neutral chassis, a whisper warm (never brown/beige) */
+  --grey-900: #1c1b1a; /* primary text, headings         */
+  --grey-700: #3a3935; /* secondary text, strong borders */
+  --grey-500: #6f6b63; /* muted text, captions           */
+  --grey-300: #b4b0a6; /* hairline 1px borders           */
+  --grey-200: #d6d4ce; /* backdrop behind the page slab  */
+  --grey-100: #f0efec; /* page body, resting surfaces    */
+  --grey-050: #fbfbf9; /* lifted / lightest surface      */
+
+  /* Yellow — the contrast field (attention) */
+  --yellow-500: #f5c518; /* the signature              */
+  --yellow-300: #f9d85c; /* summary / info box fills    */
+  --yellow-100: #fcefc1; /* hover / zebra washes        */
+
+  /* Orange — the accent (action) */
+  --orange-600: #d9531e; /* pressed states, errors     */
+  --orange-500: #f26419; /* buttons, links, focus      */
+  --orange-300: #f79c6a; /* accent hover wash          */
+
+  /* Motion — the 5% budget */
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --t-press: 90ms;
+  --t-settle: 140ms;
+  --t-hover: 120ms;
+
+  /* Type scale (ratio ~1.25, base 16px) */
+  --fs-display: 2.441rem;
+  --fs-h1: 1.953rem;
+  --fs-h2: 1.563rem;
+  --fs-h3: 1.25rem;
+  --fs-body: 1rem;
+  --fs-small: 0.8rem;
+}
+
+/* --------------------------------------------------------------------------
+   Reset — only what we need
+   -------------------------------------------------------------------------- */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
 }
 
 body {
-  font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
   margin: 0;
-  min-height: 100vh;
-  display: grid;
-  place-items: center;
-  background: #0f172a;
-  color: #e2e8f0;
+  font-family: "Cabin", system-ui, sans-serif;
+  font-size: var(--fs-body);
+  font-weight: 400;
+  line-height: 1.5;
+  color: var(--grey-900);
+  background: var(--grey-200);
+}
+.page {
+  max-width: 75rem;
+  margin: 0 auto;
+  border: 1px solid var(--grey-300);
+  background: var(--grey-100);
 }
 
-main {
-  width: min(560px, 92vw);
-  background: #1e293b;
-  border-radius: 12px;
-  padding: 1.5rem;
-  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.35);
+/* --------------------------------------------------------------------------
+   Typography
+   -------------------------------------------------------------------------- */
+
+h1,
+h2,
+h3,
+p,
+ul,
+ol,
+figure {
+  margin: 0;
 }
 
-form {
-  display: grid;
-  gap: 0.75rem;
+h1 {
+  font-size: var(--fs-h1);
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--grey-900);
 }
 
-input,
-button {
-  font: inherit;
-  padding: 0.65rem 0.75rem;
-  border-radius: 8px;
-  border: 1px solid #334155;
+h2 {
+  font-size: var(--fs-h2);
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--grey-900);
 }
 
-button {
-  cursor: pointer;
-  color: #0f172a;
-  background: #38bdf8;
-  border: none;
+h3 {
+  font-size: var(--fs-h3);
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--grey-700);
+}
+
+.display {
+  font-size: var(--fs-display);
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--grey-900);
+}
+
+.eyebrow {
+  font-size: var(--fs-small);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--grey-700);
+}
+
+.small {
+  font-size: var(--fs-small);
+  color: var(--grey-500);
+}
+
+strong,
+b {
   font-weight: 600;
 }
 
-#submission-status {
-  min-height: 1.5rem;
+/* Running text gets a comfortable measure and paragraph rhythm. */
+.prose {
+  max-width: 70ch;
+}
+
+.prose p + p {
+  margin-top: 0.75em;
+}
+
+a {
+  color: var(--orange-500);
+  text-decoration: none;
+  transition: color var(--t-hover) ease;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+a:focus-visible {
+  outline: 2px solid var(--orange-500);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* --------------------------------------------------------------------------
+   Section primitive — sections share edges, no margins between them
+   -------------------------------------------------------------------------- */
+
+.section {
+  padding: 2rem 1.75rem;
+  border-bottom: 1px solid var(--grey-300);
+  background: var(--grey-100);
+
+}
+
+.section:last-child {
+  border-bottom: none;
+}
+
+.section--surface {
+  background: var(--grey-050);
+}
+
+.section__head {
+  margin-bottom: 1.25rem;
+}
+
+.section__head .eyebrow {
+  display: block;
+  margin-bottom: 0.25rem;
+}
+
+/* --------------------------------------------------------------------------
+   Logograph — VTTU mark
+   The abbreviation rendered as a hard, official-looking emblem.
+   -------------------------------------------------------------------------- */
+
+.vttu-mark {
+  display: inline-flex;
+  align-items: center;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  line-height: 1;
+  user-select: none;
+}
+
+.vttu-mark__glyph {
+  display: inline-block;
+  padding: 0.3em 0.5em;
+  background: var(--grey-900);
+  color: var(--yellow-500);
+  border: 1px solid var(--grey-900);
+  border-radius: 2px;
+}
+
+/* The single orange spark in the emblem — ties it to the palette. */
+.vttu-mark__glyph .spark {
+  color: var(--orange-500);
+}
+
+.vttu-mark--lg {
+  font-size: 2rem;
+}
+
+.vttu-mark--xl {
+  font-size: 3.25rem;
+}
+
+/* --------------------------------------------------------------------------
+   Masthead — official banner
+   -------------------------------------------------------------------------- */
+
+.masthead {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.75rem;
+  background: var(--grey-050);
+  border-bottom: 1px solid var(--grey-300);
+}
+
+.masthead__titles {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.masthead__name {
+  font-size: var(--fs-h3);
+  font-weight: 600;
+  color: var(--grey-900);
+}
+
+.masthead__slogan {
+  font-size: var(--fs-small);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--orange-500);
+}
+
+/* --------------------------------------------------------------------------
+   Navigation — idle weight 500, no gaps, border-separated
+   -------------------------------------------------------------------------- */
+
+.nav {
+  display: flex;
+  flex-wrap: wrap;
+  background: var(--grey-100);
+  border-bottom: 1px solid var(--grey-300);
+}
+
+.nav__link {
+  padding: 0.65rem 1.1rem;
+  font-weight: 500;
+  color: var(--grey-700);
+  border-right: 1px solid var(--grey-300);
+  transition: background var(--t-hover) ease, color var(--t-hover) ease;
+}
+
+.nav__link:hover {
+  background: var(--yellow-100);
+  color: var(--grey-900);
+  text-decoration: none;
+}
+
+.nav__link[aria-current="page"] {
+  background: var(--yellow-300);
+  color: var(--grey-900);
+}
+
+/* --------------------------------------------------------------------------
+   Hero
+   -------------------------------------------------------------------------- */
+
+.hero {
+  position: relative;
+  padding: 3rem 1.75rem;
+  border-bottom: 1px solid var(--grey-300);
+  overflow: hidden; /* clip the decorative backdrop to the slab */
+}
+
+/* The Three.js backdrop fills the hero and sits behind the content. It is
+   near-transparent on purpose: a quiet hint of depth, never a focal point. */
+.hero__canvas {
+  position: absolute;
+  inset: 0 0 0 auto; /* pin to the right edge of the hero */
+  display: block;
+  width: 50%; /* occupy only the right half of the container */
+  height: 100%;
+  z-index: 0;
+  opacity: 0.15;
+}
+
+.hero__inner {
+  position: relative;
+  z-index: 1;
+}
+
+.hero__display {
+  max-width: 32ch;
+}
+
+.hero__lead {
+  margin-top: 0.75rem;
+  max-width: 60ch;
+  color: var(--grey-700);
+  font-size: var(--fs-h3);
+  font-weight: 400;
+}
+
+.hero__actions {
+  margin-top: 1.5rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+/* --------------------------------------------------------------------------
+   Buttons — the orange spark. One primary per view.
+   -------------------------------------------------------------------------- */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.6rem 1.2rem;
+  font-family: inherit;
+  font-size: var(--fs-body);
+  font-weight: 600;
+  line-height: 1.2;
+  border: 1px solid transparent;
+  border-radius: 2px;
+  cursor: pointer;
+  transition: transform var(--t-settle) var(--ease-spring),
+    background var(--t-hover) ease, border-color var(--t-hover) ease;
+}
+
+.btn:active {
+  transform: translateY(1px) scale(0.98);
+  transition: transform var(--t-press);
+}
+
+.btn:focus-visible {
+  outline: 2px solid var(--orange-500);
+  outline-offset: 2px;
+}
+
+.btn--primary {
+  background: var(--orange-500);
+  color: var(--grey-050);
+}
+
+.btn--primary:hover {
+  background: var(--orange-300);
+}
+
+.btn--primary:active {
+  background: var(--orange-600);
+}
+
+.btn--secondary {
+  background: var(--grey-050);
+  color: var(--grey-900);
+  border-color: var(--grey-300);
+}
+
+.btn--secondary:hover {
+  background: var(--yellow-100);
+}
+
+.btn--ghost {
+  background: transparent;
+  color: var(--orange-500);
+}
+
+.btn--ghost:hover {
+  color: var(--orange-600);
+  text-decoration: underline;
+}
+
+.btn:disabled {
+  color: var(--grey-500);
+  background: var(--grey-100);
+  border-color: var(--grey-300);
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* --------------------------------------------------------------------------
+   Summary / Info box — the flagship yellow field
+   -------------------------------------------------------------------------- */
+
+.summary {
+  background: var(--yellow-300);
+  border: 1px solid var(--grey-300);
+  border-radius: 2px;
+  padding: 1.25rem 1.5rem;
+  color: var(--grey-900);
+}
+
+.summary__label {
+  display: block;
+  margin-bottom: 0.4rem;
+  font-size: var(--fs-small);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--grey-700);
+}
+
+/* --------------------------------------------------------------------------
+   Cards & grid — carved from the slab, sharing edges, no gaps
+   -------------------------------------------------------------------------- */
+
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+  border: 1px solid var(--grey-300);
+  border-radius: 2px;
+  /* The grid's own border + each card's right/bottom border share seams;
+     overflow clips the trailing edges so the slab reads as one piece. */
+  overflow: hidden;
+}
+
+.card {
+  padding: 1.25rem 1.4rem;
+  background: var(--grey-050);
+  border-right: 1px solid var(--grey-300);
+  border-bottom: 1px solid var(--grey-300);
+}
+
+.card__title {
+  margin-bottom: 0.4rem;
+}
+
+.card__body {
+  color: var(--grey-900);
+}
+
+/* --------------------------------------------------------------------------
+   Tables — caps header, yellow-100 zebra, yellow-300 active row
+   -------------------------------------------------------------------------- */
+
+.table-wrap {
+  border: 1px solid var(--grey-300);
+  border-radius: 2px;
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--fs-body);
+}
+
+thead th {
+  padding: 0.6rem 0.9rem;
+  text-align: left;
+  font-size: var(--fs-small);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--grey-700);
+  background: var(--grey-100);
+  border-bottom: 1px solid var(--grey-300);
+}
+
+tbody td {
+  padding: 0.6rem 0.9rem;
+  border-bottom: 1px solid var(--grey-300);
+}
+
+tbody tr:last-child td {
+  border-bottom: none;
+}
+
+tbody tr:nth-child(even) {
+  background: var(--yellow-100);
+}
+
+tbody tr[aria-selected="true"] {
+  background: var(--yellow-300);
+}
+
+/* --------------------------------------------------------------------------
+   Form — official application. Inputs flush, focus blooms orange.
+   -------------------------------------------------------------------------- */
+
+.form {
+  max-width: 36rem;
+  border: 1px solid var(--grey-300);
+  border-radius: 2px;
+}
+
+.field {
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--grey-300);
+}
+
+.field--actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  border-bottom: none;
+  background: var(--grey-050);
+}
+
+.field__label {
+  display: block;
+  margin-bottom: 0.35rem;
+  font-size: var(--fs-small);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--grey-700);
+}
+
+.input,
+.select,
+.textarea {
+  width: 100%;
+  font-family: inherit;
+  font-size: var(--fs-body);
+  color: var(--grey-900);
+  background: var(--grey-050);
+  border: 1px solid var(--grey-300);
+  border-radius: 2px;
+  padding: 0.55rem 0.7rem;
+  transition: border-color var(--t-hover) ease;
+}
+
+.textarea {
+  resize: vertical;
+  min-height: 5rem;
+}
+
+.input:focus,
+.select:focus,
+.textarea:focus {
+  border-color: var(--orange-500);
+  outline: 2px solid var(--orange-500);
+  outline-offset: 0;
+}
+
+.field__help {
+  margin-top: 0.35rem;
+  font-size: var(--fs-small);
+  color: var(--grey-500);
+}
+
+.field__error {
+  margin-top: 0.35rem;
+  font-size: var(--fs-small);
+  font-weight: 600;
+  color: var(--orange-600);
+}
+
+/* Submission status line, populated by app.js. */
+.form__status {
+  min-height: 1.25rem;
+  color: var(--grey-700);
+}
+
+/* --------------------------------------------------------------------------
+   Badge / tag — small flat markers
+   -------------------------------------------------------------------------- */
+
+.badge {
+  display: inline-block;
+  padding: 0.15rem 0.5rem;
+  font-size: var(--fs-small);
+  font-weight: 600;
+  border: 1px solid var(--grey-300);
+  border-radius: 2px;
+  background: var(--grey-050);
+  color: var(--grey-700);
+}
+
+.badge--attention {
+  background: var(--yellow-300);
+  color: var(--grey-900);
+}
+
+.badge--live {
+  background: var(--orange-500);
+  color: var(--grey-050);
+  border-color: var(--orange-500);
+}
+
+/* --------------------------------------------------------------------------
+   Definition list — official key/value rows
+   -------------------------------------------------------------------------- */
+
+.facts {
+  border: 1px solid var(--grey-300);
+  border-radius: 2px;
+}
+
+.facts__row {
+  display: grid;
+  grid-template-columns: minmax(8rem, 14rem) 1fr;
+  border-bottom: 1px solid var(--grey-300);
+}
+
+.facts__row:last-child {
+  border-bottom: none;
+}
+
+.facts__key {
+  padding: 0.6rem 0.9rem;
+  font-weight: 600;
+  color: var(--grey-700);
+  background: var(--grey-100);
+  border-right: 1px solid var(--grey-300);
+}
+
+.facts__val {
+  padding: 0.6rem 0.9rem;
+  color: var(--grey-900);
+}
+
+/* --------------------------------------------------------------------------
+   Notice strip — satirical fine print, the "closer inspection" tell
+   -------------------------------------------------------------------------- */
+
+.notice {
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--grey-300);
+  border-radius: 2px;
+  background: var(--grey-050);
+  color: var(--grey-500);
+  font-size: var(--fs-small);
+}
+
+/* --------------------------------------------------------------------------
+   Footer
+   -------------------------------------------------------------------------- */
+
+.footer {
+  padding: 1.5rem 1.75rem;
+  background: var(--grey-050);
+  border-top: 1px solid var(--grey-300);
+  color: var(--grey-500);
+  font-size: var(--fs-small);
+}
+
+.footer__top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.footer__copy {
+  color: var(--grey-700);
+  font-weight: 600;
+}
+
+/* --------------------------------------------------------------------------
+   Utilities — narrow, deliberate
+   -------------------------------------------------------------------------- */
+
+/* Space the children of a container (e.g. several paragraphs). */
+.stack > * + * {
+  margin-top: 1rem;
+}
+
+/* Top margin for a standalone element following another block. */
+.gap-top {
+  margin-top: 1rem;
+}
+
+.flush {
+  margin: 0;
+}
+
+/* --------------------------------------------------------------------------
+   Motion contract — prefers-reduced-motion is law
+   -------------------------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
 }

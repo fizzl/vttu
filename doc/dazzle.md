@@ -28,18 +28,19 @@ design system — one block, no dependencies.
 
 ```css
 :root {
-  /* Greys — warm neutral chassis */
-  --grey-900: #1C1B19;  /* primary text, headings        */
-  --grey-700: #3A3833;  /* secondary text, strong borders */
-  --grey-500: #6E6A61;  /* muted text, captions          */
-  --grey-300: #B8B4AA;  /* hairline 1px borders          */
-  --grey-100: #EDEAE3;  /* page body, resting surfaces   */
-  --grey-050: #F7F5F0;  /* lifted / lightest surface     */
+  /* Greys — clean neutral chassis, a whisper warm (never brown/beige) */
+  --grey-900: #1C1B1A;  /* primary text, headings        */
+  --grey-700: #3A3935;  /* secondary text, strong borders */
+  --grey-500: #6F6B63;  /* muted text, captions          */
+  --grey-300: #B4B0A6;  /* hairline 1px borders          */
+  --grey-200: #D6D4CE;  /* backdrop behind the page slab */
+  --grey-100: #E6E4DF;  /* page body, resting surfaces   */
+  --grey-050: #FBFBF9;  /* lifted / lightest surface     */
 
   /* Yellow — the contrast field (attention) */
   --yellow-500: #F5C518; /* the signature                */
-  --yellow-300: #FBE08A; /* summary / info box fills     */
-  --yellow-100: #FDF4CE; /* hover / zebra washes         */
+  --yellow-300: #F9D85C; /* summary / info box fills     */
+  --yellow-100: #FCEFC1; /* hover / zebra washes         */
 
   /* Orange — the accent (action) */
   --orange-600: #D9531E; /* pressed states, errors       */
@@ -66,12 +67,13 @@ next to yellow without clashing.
 
 | Token        | Hex       | Role                                                    |
 | ------------ | --------- | ------------------------------------------------------- |
-| `grey-900`   | `#1C1B19` | Primary text, headings. Near-black, warm.               |
-| `grey-700`   | `#3A3833` | Secondary text, strong borders.                         |
-| `grey-500`   | `#6E6A61` | Muted text, captions, disabled labels.                  |
-| `grey-300`   | `#B8B4AA` | Hairline borders (the aerodynamic `1px` skin).          |
-| `grey-100`   | `#EDEAE3` | Page body, resting surfaces.                            |
-| `grey-050`   | `#F7F5F0` | Lifted surfaces, the lightest neutral fill.             |
+| `grey-900`   | `#1C1B1A` | Primary text, headings. Near-black, warm.               |
+| `grey-700`   | `#3A3935` | Secondary text, strong borders.                         |
+| `grey-500`   | `#6F6B63` | Muted text, captions, disabled labels.                  |
+| `grey-300`   | `#B4B0A6` | Hairline borders (the aerodynamic `1px` skin).          |
+| `grey-200`   | `#D6D4CE` | Backdrop behind the page slab — the darker "desk".      |
+| `grey-100`   | `#E6E4DF` | Page body, resting surfaces.                            |
+| `grey-050`   | `#FBFBF9` | Lifted surfaces, the lightest neutral fill.             |
 
 **Why warm grey.** A neutral with a faint warm bias makes yellow look intentional
 rather than accidental — the two share a hint of the same temperature. Cool grey
@@ -88,8 +90,8 @@ the personality.
 | Token         | Hex       | Role                                                   |
 | ------------- | --------- | ------------------------------------------------------ |
 | `yellow-500`  | `#F5C518` | The signature. Pure, confident, slightly golden.       |
-| `yellow-300`  | `#FBE08A` | Info / summary box backgrounds — soft enough to host text. |
-| `yellow-100`  | `#FDF4CE` | Faintest wash — hover fills, zebra striping, gentle highlight. |
+| `yellow-300`  | `#F9D85C` | Info / summary box backgrounds — soft enough to host text. |
+| `yellow-100`  | `#FCEFC1` | Faintest wash — hover fills, zebra striping, gentle highlight. |
 
 **Why yellow as the field.** Yellow has the highest luminance of any saturated
 hue, so a yellow panel can carry `grey-900` text at full contrast — you get a box

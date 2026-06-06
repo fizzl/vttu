@@ -1,50 +1,32 @@
-interface VttuConfig {
-  apiUrl: string;
-}
+/**
+ * VTTU — frontend behaviour.
+ *
+ * This is a satirical showcase page: nothing is sent anywhere and no data is
+ * collected. The form is handled entirely client-side. The script is defensive
+ * — if an element is missing it simply does nothing rather than throwing, so a
+ * future page that drops the form still loads cleanly.
+ */
 
 const form = document.querySelector<HTMLFormElement>('#submission-form');
 const input = document.querySelector<HTMLInputElement>('#submission-value');
 const statusElement = document.querySelector<HTMLElement>('#submission-status');
 
-if (!form || !input || !statusElement) {
-  throw new Error('Form elements were not found.');
-}
+if (form && input && statusElement) {
+  form.addEventListener('submit', (event) => {
+    event.preventDefault();
 
-const config = (window as Window & { VTTU_CONFIG?: VttuConfig }).VTTU_CONFIG;
-if (!config || !config.apiUrl) {
-  throw new Error('Missing VTTU_CONFIG.apiUrl in config.js.');
-}
-
-form.addEventListener('submit', async (event) => {
-  event.preventDefault();
-
-  const value = input.value.trim();
-  if (!value) {
-    statusElement.textContent = 'Please provide a value before submitting.';
-    return;
-  }
-
-  statusElement.textContent = 'Submitting...';
-
-  try {
-    const response = await fetch(config.apiUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ value })
-    });
-
-    const body = await response.json() as { id?: string; message?: string };
-
-    if (!response.ok) {
-      statusElement.textContent = body.message ?? 'Submission failed.';
+    const value = input.value.trim();
+    if (!value) {
+      statusElement.textContent = 'Syötä nimi ennen lähettämistä.';
       return;
     }
 
-    input.value = '';
-    statusElement.textContent = `Saved successfully. ID: ${body.id ?? 'unknown'}`;
-  } catch (error) {
-    statusElement.textContent = `Request failed: ${(error as Error).message}`;
-  }
-});
+    // No network call — this is satire. Acknowledge locally and reset.
+    statusElement.textContent = `Kiitos, ${value}! Tervetuloa VITTU töihin. (Tämä on satiiri, mitään ei lähetetty.)`;
+    form.reset();
+  });
+
+  form.addEventListener('reset', () => {
+    statusElement.textContent = '';
+  });
+}
