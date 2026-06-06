@@ -78,8 +78,7 @@ export class VttuStack extends Stack {
       }),
       timeout: Duration.seconds(10),
       environment: {
-        TABLE_NAME: table.tableName,
-        ALLOWED_ORIGINS: `https://${domainName},https://${subDomain}`
+        TABLE_NAME: table.tableName
       }
     });
 
@@ -88,7 +87,10 @@ export class VttuStack extends Stack {
     const functionUrl = handler.addFunctionUrl({
       authType: lambda.FunctionUrlAuthType.NONE,
       cors: {
-        allowedMethods: [lambda.HttpMethod.POST, lambda.HttpMethod.OPTIONS],
+        // Function URL CORS handles the OPTIONS preflight automatically; only the
+        // actual request method (POST) is listed here. OPTIONS is not a valid
+        // value for AllowMethods and is rejected at deploy time.
+        allowedMethods: [lambda.HttpMethod.POST],
         allowedOrigins: [`https://${domainName}`, `https://${subDomain}`],
         allowedHeaders: ['content-type'],
         maxAge: Duration.hours(1)

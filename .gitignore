@@ -4,3 +4,4 @@ dist/
 lambda/main
 .synth.log
 .env
+lambda/bootstrap

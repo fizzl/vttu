@@ -6,7 +6,7 @@ import { VttuStack } from '../lib/vttu-stack';
 const app = new cdk.App();
 
 const account = process.env.CDK_DEFAULT_ACCOUNT;
-const region = process.env.CDK_DEFAULT_REGION ?? 'eu-north-1';
+const region = process.env.CDK_DEFAULT_REGION ?? 'eu-central-1';
 
 const hostedZoneId = app.node.tryGetContext('hostedZoneId') ?? process.env.HOSTED_ZONE_ID;
 if (!hostedZoneId) {

@@ -45,7 +45,7 @@ AWS CDK project that deploys:
 3. Fill values in `.env`:
 
    - `CDK_DEFAULT_ACCOUNT` = your AWS account ID
-   - `CDK_DEFAULT_REGION` = deployment region (default `eu-north-1`)
+   - `CDK_DEFAULT_REGION` = deployment region (default `eu-central-1`)
    - `HOSTED_ZONE_ID` = Route 53 hosted zone ID for `vttu.fi`
 
 4. Load env vars in your shell (example):
@@ -137,7 +137,7 @@ aws iam attach-role-policy \
 - In GitHub repository secrets, set:
   - `AWS_ROLE_TO_ASSUME=arn:aws:iam::<ACCOUNT_ID>:role/github-actions-vttu-deploy`
 - In GitHub repository variables, set (optional):
-  - `AWS_REGION=eu-north-1`
+  - `AWS_REGION=eu-central-1`
 - The workflow in `.github/workflows/deploy.yml` reads these values automatically.
 
 For local development, you can also keep `AWS_ROLE_TO_ASSUME` in `.env` as documentation/reference.

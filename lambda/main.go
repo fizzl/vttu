@@ -31,9 +31,8 @@ type submissionItem struct {
 }
 
 type handler struct {
-	tableName      string
-	ddbClient      *dynamodb.Client
-	allowedOrigins map[string]struct{}
+	tableName string
+	ddbClient *dynamodb.Client
 }
 
 func main() {
@@ -48,65 +47,46 @@ func main() {
 	}
 
 	h := &handler{
-		tableName:      tableName,
-		ddbClient:      dynamodb.NewFromConfig(cfg),
-		allowedOrigins: parseAllowedOrigins(os.Getenv("ALLOWED_ORIGINS")),
+		tableName: tableName,
+		ddbClient: dynamodb.NewFromConfig(cfg),
 	}
 
 	lambda.Start(h.handle)
 }
 
 func (h *handler) handle(ctx context.Context, req events.LambdaFunctionURLRequest) (events.LambdaFunctionURLResponse, error) {
-	origin := req.Headers["origin"]
-	if origin == "" {
-		origin = req.Headers["Origin"]
-	}
-	corsHeaders := map[string]string{}
-	if origin != "" {
-		if _, ok := h.allowedOrigins[origin]; !ok {
-			return jsonResponse(403, "origin is not allowed", nil), nil
-		}
-		corsHeaders["Access-Control-Allow-Origin"] = origin
-		corsHeaders["Vary"] = "Origin"
-	}
-
-	if req.RequestContext.HTTP.Method == "OPTIONS" {
-		return events.LambdaFunctionURLResponse{
-			StatusCode: 204,
-			Headers:    corsHeaders,
-		}, nil
-	}
-
+	// CORS (allowed origins, preflight) is handled entirely by the Lambda
+	// Function URL CORS configuration, so it is intentionally absent here.
 	if req.RequestContext.HTTP.Method != "POST" {
-		return jsonResponse(405, "method not allowed", corsHeaders), nil
+		return jsonResponse(405, "method not allowed"), nil
 	}
 
 	body := req.Body
 	if req.IsBase64Encoded {
 		decodedBody, err := base64.StdEncoding.DecodeString(req.Body)
 		if err != nil {
-			return jsonResponse(400, "invalid request body", corsHeaders), nil
+			return jsonResponse(400, "invalid request body"), nil
 		}
 		body = string(decodedBody)
 	}
 
 	var payload submissionRequest
 	if err := json.Unmarshal([]byte(body), &payload); err != nil {
-		return jsonResponse(400, "invalid request body", corsHeaders), nil
+		return jsonResponse(400, "invalid request body"), nil
 	}
 
 	payload.Value = strings.TrimSpace(payload.Value)
 	if payload.Value == "" {
-		return jsonResponse(400, "value is required", corsHeaders), nil
+		return jsonResponse(400, "value is required"), nil
 	}
 	if len(payload.Value) > 1024 {
-		return jsonResponse(400, "value must be at most 1024 characters", corsHeaders), nil
+		return jsonResponse(400, "value must be at most 1024 characters"), nil
 	}
 
 	id, err := randomID()
 	if err != nil {
 		log.Printf("failed to create id: %v", err)
-		return jsonResponse(500, "internal server error", corsHeaders), nil
+		return jsonResponse(500, "internal server error"), nil
 	}
 
 	item, err := attributevalue.MarshalMap(submissionItem{
@@ -116,7 +96,7 @@ func (h *handler) handle(ctx context.Context, req events.LambdaFunctionURLReques
 	})
 	if err != nil {
 		log.Printf("failed to marshal item: %v", err)
-		return jsonResponse(500, "internal server error", corsHeaders), nil
+		return jsonResponse(500, "internal server error"), nil
 	}
 
 	_, err = h.ddbClient.PutItem(ctx, &dynamodb.PutItemInput{
@@ -125,24 +105,20 @@ func (h *handler) handle(ctx context.Context, req events.LambdaFunctionURLReques
 	})
 	if err != nil {
 		log.Printf("failed to save item: %v", err)
-		return jsonResponse(500, "internal server error", corsHeaders), nil
+		return jsonResponse(500, "internal server error"), nil
 	}
 
 	return events.LambdaFunctionURLResponse{
 		StatusCode: 201,
-		Headers:    corsHeaders,
+		Headers:    map[string]string{"Content-Type": "application/json"},
 		Body:       fmt.Sprintf(`{"id":"%s"}`, id),
 	}, nil
 }
 
-func jsonResponse(code int, message string, headers map[string]string) events.LambdaFunctionURLResponse {
-	if headers == nil {
-		headers = map[string]string{}
-	}
-	headers["Content-Type"] = "application/json"
+func jsonResponse(code int, message string) events.LambdaFunctionURLResponse {
 	return events.LambdaFunctionURLResponse{
 		StatusCode: code,
-		Headers:    headers,
+		Headers:    map[string]string{"Content-Type": "application/json"},
 		Body:       fmt.Sprintf(`{"message":%q}`, message),
 	}
 }
@@ -153,15 +129,4 @@ func randomID() (string, error) {
 		return "", errors.New("failed to read random bytes")
 	}
 	return hex.EncodeToString(buf), nil
-}
-
-func parseAllowedOrigins(value string) map[string]struct{} {
-	origins := map[string]struct{}{}
-	for _, origin := range strings.Split(value, ",") {
-		origin = strings.TrimSpace(origin)
-		if origin != "" {
-			origins[origin] = struct{}{}
-		}
-	}
-	return origins
 }
