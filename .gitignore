@@ -3,3 +3,4 @@ cdk.out/
 dist/
 lambda/main
 .synth.log
+.env

@@ -1,4 +1,4 @@
-# vttu
+# VVTU
 
 AWS CDK project that deploys:
 
@@ -22,10 +22,11 @@ AWS CDK project that deploys:
 
 - Node.js 20+
 - npm
-- Go 1.22+
+- Go 1.23+
 - AWS account with:
   - Route 53 hosted zone for `vttu.fi`
-  - CDK bootstrap completed in target region/account
+  - CDK bootstrap completed in **both** the target region and `us-east-1`
+    (the CloudFront certificate stack is deployed to `us-east-1`)
 
 ## Local setup
 
@@ -60,16 +61,28 @@ AWS CDK project that deploys:
    ```bash
    npm run build
    npm test
-   npx cdk synth --parameters HostedZoneId=$HOSTED_ZONE_ID
+   npx cdk synth -c hostedZoneId=$HOSTED_ZONE_ID
    ```
+
+   The hosted zone ID is passed via CDK context (`-c hostedZoneId=...`), or
+   read from the `HOSTED_ZONE_ID` environment variable as a fallback.
 
 ## Deploy
 
+The app synthesizes two stacks: `VttuCertificateStack` (ACM certificate in
+`us-east-1`) and `VttuStack` (everything else). Deploy both:
+
 ```bash
-npx cdk deploy --require-approval never --parameters HostedZoneId=$HOSTED_ZONE_ID
+npx cdk deploy --all --require-approval never -c hostedZoneId=$HOSTED_ZONE_ID
 ```
 
 The stack outputs include the Lambda Function URL and website URL.
+
+The submission Lambda runs on the `provided.al2023` runtime (compiled Go
+`bootstrap` binary) and is capped with reserved concurrency. The Function URL
+is public and unauthenticated; the reserved-concurrency cap limits cost from
+abuse but does not block it. For real bot protection, put the Function URL
+behind CloudFront + AWS WAF or add a CAPTCHA check in the handler.
 
 ## Required AWS role (GitHub Actions OIDC)
 

@@ -1,6 +1,6 @@
 import * as path from 'path';
 import { execSync } from 'child_process';
-import { Duration, RemovalPolicy, Stack, StackProps, CfnOutput, CfnParameter } from 'aws-cdk-lib';
+import { DockerImage, Duration, RemovalPolicy, Stack, StackProps, CfnOutput } from 'aws-cdk-lib';
 import * as acm from 'aws-cdk-lib/aws-certificatemanager';
 import * as cloudfront from 'aws-cdk-lib/aws-cloudfront';
 import * as origins from 'aws-cdk-lib/aws-cloudfront-origins';
@@ -12,28 +12,21 @@ import * as s3 from 'aws-cdk-lib/aws-s3';
 import * as s3deploy from 'aws-cdk-lib/aws-s3-deployment';
 import { Construct } from 'constructs';
 
+export interface VttuStackProps extends StackProps {
+  hostedZoneId: string;
+  certificate: acm.ICertificate;
+}
+
 export class VttuStack extends Stack {
-  constructor(scope: Construct, id: string, props?: StackProps) {
+  constructor(scope: Construct, id: string, props: VttuStackProps) {
     super(scope, id, props);
 
     const domainName = 'vttu.fi';
     const subDomain = `www.${domainName}`;
 
-    const hostedZoneId = new CfnParameter(this, 'HostedZoneId', {
-      type: 'String',
-      description: 'Route53 hosted zone ID for vttu.fi'
-    });
-
     const zone = route53.HostedZone.fromHostedZoneAttributes(this, 'HostedZone', {
-      hostedZoneId: hostedZoneId.valueAsString,
+      hostedZoneId: props.hostedZoneId,
       zoneName: domainName
-    });
-
-    const certificate = new acm.DnsValidatedCertificate(this, 'WebsiteCertificate', {
-      domainName,
-      hostedZone: zone,
-      region: 'us-east-1',
-      subjectAlternativeNames: [subDomain]
     });
 
     const websiteBucket = new s3.Bucket(this, 'WebsiteBucket', {
@@ -45,9 +38,6 @@ export class VttuStack extends Stack {
       autoDeleteObjects: false
     });
 
-    const originAccessIdentity = new cloudfront.OriginAccessIdentity(this, 'WebsiteOAI');
-    websiteBucket.grantRead(originAccessIdentity);
-
     const table = new dynamodb.Table(this, 'SubmissionsTable', {
       partitionKey: { name: 'id', type: dynamodb.AttributeType.STRING },
       billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
@@ -56,19 +46,23 @@ export class VttuStack extends Stack {
     });
 
     const handler = new lambda.Function(this, 'SubmissionHandler', {
-      runtime: lambda.Runtime.GO_1_X,
+      runtime: lambda.Runtime.PROVIDED_AL2023,
       architecture: lambda.Architecture.ARM_64,
-      handler: 'main',
+      handler: 'bootstrap',
+      // Cap concurrency so a flood of requests to the public Function URL cannot
+      // run up unbounded Lambda/DynamoDB cost. Note: this throttles abuse, it
+      // does not block it — see README for the WAF/CAPTCHA follow-up.
+      reservedConcurrentExecutions: 5,
       code: lambda.Code.fromAsset(path.join(__dirname, '../lambda'), {
         bundling: {
-          image: lambda.Runtime.GO_1_X.bundlingImage,
+          image: DockerImage.fromRegistry('public.ecr.aws/docker/library/golang:1.24'),
           local: {
             tryBundle(outputDir: string): boolean {
-              execSync('GOOS=linux GOARCH=arm64 CGO_ENABLED=0 go build -o main .', {
+              execSync('GOOS=linux GOARCH=arm64 CGO_ENABLED=0 go build -tags lambda.norpc -o bootstrap .', {
                 cwd: path.join(__dirname, '../lambda'),
                 stdio: 'inherit'
               });
-              execSync(`cp main ${outputDir}/main`, {
+              execSync(`cp bootstrap ${outputDir}/bootstrap`, {
                 cwd: path.join(__dirname, '../lambda'),
                 stdio: 'inherit'
               });
@@ -78,7 +72,7 @@ export class VttuStack extends Stack {
           command: [
             'bash',
             '-c',
-            'GOOS=linux GOARCH=arm64 CGO_ENABLED=0 go build -o /asset-output/main .'
+            'GOOS=linux GOARCH=arm64 CGO_ENABLED=0 go build -tags lambda.norpc -o /asset-output/bootstrap .'
           ]
         }
       }),
@@ -103,11 +97,11 @@ export class VttuStack extends Stack {
 
     const distribution = new cloudfront.Distribution(this, 'WebsiteDistribution', {
       defaultBehavior: {
-        origin: new origins.S3Origin(websiteBucket, { originAccessIdentity }),
+        origin: origins.S3BucketOrigin.withOriginAccessControl(websiteBucket),
         viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS
       },
       domainNames: [domainName, subDomain],
-      certificate,
+      certificate: props.certificate,
       defaultRootObject: 'index.html',
       errorResponses: [
         {
