@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>vttu.fi</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main>
+      <h1>Valtion Työ- ja Tuotantounioni</h1>
+      <p>Submit a value to the backend.</p>
+
+      <form id="submission-form">
+        <label for="submission-value">Value</label>
+        <input id="submission-value" name="value" type="text" maxlength="1024" required />
+        <button type="submit">Submit</button>
+      </form>
+
+      <p id="submission-status" aria-live="polite"></p>
+    </main>
+
+    <script src="config.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>
