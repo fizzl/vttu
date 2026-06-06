@@ -22,7 +22,7 @@ if (form && input && statusElement) {
     }
 
     // No network call — this is satire. Acknowledge locally and reset.
-    statusElement.textContent = `Kiitos, ${value}! Tervetuloa VITTU töihin. (Tämä on satiiri, mitään ei lähetetty.)`;
+    statusElement.textContent = `Kiitos, ${value}! Tervetuloa VTTU töihin. (Mitään ei oikeasti tallennettu. Sivu on satiiria.)`;
     form.reset();
   });
 

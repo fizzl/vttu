@@ -10,7 +10,7 @@ if (form && input && statusElement) {
             statusElement.textContent = 'Syötä nimi ennen lähettämistä.';
             return;
         }
-        statusElement.textContent = `Kiitos, ${value}! Tervetuloa VITTU töihin. (Tämä on satiiri, mitään ei lähetetty.)`;
+        statusElement.textContent = `Kiitos, ${value}. Hakemus on vastaanotettu esittelytilassa: tämä on satiiria, eikä mitään lähetetty tai tallennettu.`;
         form.reset();
     });
     form.addEventListener('reset', () => {
