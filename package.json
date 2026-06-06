@@ -2,6 +2,9 @@
   "name": "vttu",
   "version": "0.1.0",
   "private": true,
+  "engines": {
+    "node": ">=24"
+  },
   "scripts": {
     "build": "npm run build:web && npm run build:cdk",
     "build:web": "tsc -p tsconfig.web.json",
@@ -11,7 +14,7 @@
     "synth": "npm run build && cdk synth"
   },
   "devDependencies": {
-    "@types/node": "^22.15.32",
+    "@types/node": "^24.0.0",
     "aws-cdk": "^2.1029.1",
     "ts-node": "^10.9.2",
     "typescript": "^5.8.3"

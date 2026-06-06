@@ -20,7 +20,7 @@ AWS CDK project that deploys:
 
 ## Prerequisites
 
-- Node.js 20+
+- Node.js 24+ (LTS)
 - npm
 - Go 1.23+
 - AWS account with:
