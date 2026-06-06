@@ -1,4 +1,4 @@
-# VVTU
+# VTTU
 
 ## Valtion Työ- ja Tuotantounioni
 
