@@ -1,89 +1,27 @@
 import { ApplicationForm } from "./components/ApplicationForm";
+import { FactList } from "./components/FactList";
+import { InfoBox } from "./components/InfoBox";
+import { PayTable } from "./components/PayTable";
+import { PrincipleGrid } from "./components/PrincipleGrid";
 import { Section } from "./components/Section";
 import { Wordmark } from "./components/Wordmark";
-
-const principles = [
-  {
-    title: "Työ jokaiselle",
-    body: "Unionin tehtävänä on osoittaa jokaiselle työllistetylle tehtävä, johon hänellä on osaamista tai jonka omaksumiseen hän on valmis. Työsuhde ja palkanmaksu alkavat viivytyksettä, jotta siirtymä työelämään ei jäisi byrokratian varaan."
-  },
-  {
-    title: "Valtiorahoitteinen alku",
-    body: "Toiminta rahoitetaan alkuvaiheessa valtion varoin työllistettyjen lukumäärän mukaan. Tavoitteena on rakentaa organisaatio, joka kykenee ajan myötä kantamaan yhä suuremman osan ohjauksestaan omalla henkilöstöllään."
-  },
-  {
-    title: "Tuttu organisaatio",
-    body: "Organisaatio rakentuu suuren monialayrityksen tavoin: alakohtaiset johtajat, myynti, projektipäälliköt, tiimit ja toteuttava porras muodostavat selkeän toimintaketjun. Kaikki toimijat ovat unionin omia työntekijöitä."
-  },
-  {
-    title: "Yksilön vapaus",
-    body: "Unioni ei edellytä jäseniltään pysyvää sitoutumista. Sen tarkoitus on mahdollistaa oppiminen, työnteko ja yksilön kehitys niin, että työntekijä voi jatkaa eteenpäin heti, kun omat tavoitteet sitä puoltavat."
-  }
-];
-
-const facts = [
-  ["Peruspalkka", "1 000 €/kk + seutukohtainen elinkustannuskorotus"],
-  ["Vertailu", "30 % enemmän kuin nykyiset työttömyysetuudet"],
-  ["Palkanmaksu", "Alkaa heti työsuhteen alkaessa"],
-  ["Pätevyysvaatimus", "Pätevä tai halukas oppimaan"],
-  ["Toimipisteet", "Logistisesti järkevät paikat, myös pienemmät kaupungit"]
-];
-
-const payRows = [
-  ["Pääkaupunkiseutu", "1 000 €", "+ 210 €", "1 210 €"],
-  ["Kaupunki", "1 000 €", "+ 60 €", "1 060 €"],
-  ["Taajama", "1 000 €", "+ 30 €", "1 030 €"],
-  ["Haja-asutusalue", "1 000 €", "+ 10 €", "1 010 €"]
-];
 
 export default function App() {
   return (
     <div className="mx-auto my-0 max-w-3xl border-x border-b border-white-300 bg-white-100 sm:my-8">
       {/* Header: the VTTU wordmark and the official name */}
       <header className="border-t border-white-300 px-6 py-10 sm:px-10">
-        <Wordmark className="text-[2.441rem] leading-none" />
+        <Wordmark spark className="text-[2.441rem] leading-none" />
         <p className="mt-2 text-[1.25rem] font-semibold text-ink-700">
           Valtion Työ- ja Tuotantounioni
         </p>
       </header>
 
-      {/*
-        Info box: the flagship yellow field. It deliberately breaks
-        aerodynamics (doc/aerodynamics.md). The wrapper spans the full slab
-        width and is shoved right by the overflow amount, so the box is indented
-        from the slab's left edge by the same ~10% it spills past the right edge
-        into the page background.
-
-        The drop shadow must land ONLY on the backmost page background (the
-        desk), never on the slab. There is no clean CSS way to clip a shadow to
-        "outside the slab", so we use a shadow-only div: a sibling sized to the
-        overflow strip, painted under the box (earlier in the DOM, both
-        positioned), whose only job is to cast the shadow out onto the desk. The
-        opaque yellow box covers the strip itself and the inward shadow; only
-        the outward spill, which is over the desk, shows. The exception
-        strengthens the rule.
-      */}
-      <section className="border-t border-white-300 bg-white-100 py-10">
-        <div className="relative w-full translate-x-[5%]">
-          <div
-            aria-hidden="true"
-            className="absolute inset-y-0 right-0 w-[5%] rounded-sm shadow-[7px_8px_12px_4px_rgba(26,28,32,0.25)]"
-          />
-          <div className="relative rounded-sm border border-white-300 bg-yellow-300 px-4 py-3">
-            <span className="text-[0.8rem] font-semibold uppercase tracking-[0.04em] text-ink-900">
-              Mee VTTU töihin!
-            </span>
-            <p className="mt-1 text-ink-900">
-              Internetissä oletkin saattanut törmätä tähän iloiseen hihkaisuun! Olet ehkä törmännyt
-              ihka aitoon VTTU-toimihenkilöön! Me VTTU:lla haluamme, että kaikki menee{" "}
-              <strong className="font-semibold">VTTU töihin</strong>!
-            </p>
-          </div>
-        </div>
-      </section>
+      {/* Info box: the flagship yellow field, with its entry shimmer */}
+      <InfoBox />
 
       {/* Esittely */}
-      <Section eyebrow="Avoin työ- ja oppimismalli" title="Töihin jo tänään!" surface>
+      <Section eyebrow="Avoin työ- ja oppimismalli" title="Töihin jo tänään!" accent={0} surface>
         <p className="max-w-prose leading-relaxed text-ink-900">
           Kuka tahansa voi hakeutua unionin palvelukseen elämäntilanteestaan riippumatta. Ajatus on
           yksinkertainen: jokaiselle osoitetaan työtä osaamisen, potentiaalin ja kiinnostuksen
@@ -94,7 +32,7 @@ export default function App() {
       </Section>
 
       {/* Hakemus: the inert form, moved up right after the intro */}
-      <Section eyebrow="Hakemus" title="Hae VTTU töihin!">
+      <Section eyebrow="Hakemus" title="Hae VTTU töihin!" accent={1}>
         <p className="mb-5 max-w-prose text-ink-900">
           Täytä alla olevat kentät. Riittää kun jätät sähköpostiosoitteesi ja kerrot omin sanoin,
           mikä sinua motivoi.
@@ -103,54 +41,23 @@ export default function App() {
       </Section>
 
       {/* Miten VTTU toimii: cards sharing 1px seams */}
-      <Section eyebrow="Toimintaperiaate" title="Miten VTTU toimii" surface>
-        <div className="grid gap-px border border-white-300 bg-white-300 sm:grid-cols-2">
-          {principles.map((p) => (
-            <article key={p.title} className="bg-white-050 p-6">
-              <h3 className="text-[1.25rem] font-semibold text-ink-700">{p.title}</h3>
-              <p className="mt-2 leading-relaxed text-ink-900">{p.body}</p>
-            </article>
-          ))}
-        </div>
+      <Section eyebrow="Toimintaperiaate" title="Miten VTTU toimii" accent={2} surface>
+        <PrincipleGrid />
       </Section>
 
       {/* Lyhyesti: key/value facts */}
-      <Section eyebrow="Perustiedot" title="Lyhyesti">
-        <dl className="divide-y divide-white-300 border border-white-300">
-          {facts.map(([key, val]) => (
-            <div key={key} className="grid sm:grid-cols-[16rem_1fr] sm:divide-x sm:divide-white-300">
-              <dt className="bg-white-100 px-3 py-2 font-semibold text-ink-700">{key}</dt>
-              <dd className="bg-white-050 px-3 py-2 text-ink-900">{val}</dd>
-            </div>
-          ))}
-        </dl>
+      <Section eyebrow="Perustiedot" title="Lyhyesti" accent={3}>
+        <FactList />
       </Section>
 
       {/* Palkkamalli: the table */}
-      <Section eyebrow="Kannustinmalli" title="Palkka ja elinkustannusindeksi" surface>
-        <div className="overflow-x-auto border border-white-300">
-          <table className="w-full border-collapse text-left">
-            <thead>
-              <tr className="bg-white-100 text-[0.8rem] uppercase tracking-[0.04em] text-ink-700">
-                <th className="px-3 py-2 font-semibold">Seutu</th>
-                <th className="px-3 py-2 font-semibold">Peruspalkka</th>
-                <th className="px-3 py-2 font-semibold">Indeksikorotus</th>
-                <th className="px-3 py-2 font-semibold">Yhteensä / kk</th>
-              </tr>
-            </thead>
-            <tbody>
-              {payRows.map((row) => (
-                <tr key={row[0]} className="border-t border-white-300">
-                  {row.map((cell, i) => (
-                    <td key={i} className={`px-3 py-2 text-ink-900 ${i === 0 ? "font-semibold" : ""}`}>
-                      {cell}
-                    </td>
-                  ))}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+      <Section
+        eyebrow="Kannustinmalli"
+        title="Palkka ja elinkustannusindeksi"
+        accent={0}
+        surface
+      >
+        <PayTable />
         <p className="mt-4 max-w-prose text-[0.9rem] leading-relaxed text-ink-500">
           Korotus noudattaa vähenevän hyödyn periaatetta. Malli huomioi elinkustannusten alueelliset
           erot, kannustaa väljempään asumiseen ja avaa pienemmillekin kaupungeille realistisen kasvun
@@ -159,7 +66,7 @@ export default function App() {
       </Section>
 
       {/* Projektit: prose + badges */}
-      <Section eyebrow="Työn luonne" title="Kaikki työ on projektilähtöistä">
+      <Section eyebrow="Työn luonne" title="Kaikki työ on projektilähtöistä" accent={1}>
         <div className="max-w-prose space-y-3 leading-relaxed text-ink-900">
           <p>
             Jos työn luonne ei valmiiksi ole projektilähtöinen, se voidaan jäsentää esimerkiksi
@@ -180,7 +87,7 @@ export default function App() {
       </Section>
 
       {/* Toiminta-ajatus: the mission statement */}
-      <Section eyebrow="Toiminta-ajatus" title="Työtä koko Suomelle" surface>
+      <Section eyebrow="Toiminta-ajatus" title="Työtä koko Suomelle" accent={2} surface>
         <div className="max-w-prose space-y-3 leading-relaxed text-ink-900">
           <p>
             Valtion Työ- ja Tuotantounioni perustuu ajatukseen, että jokaisella on oikeus
@@ -207,6 +114,7 @@ export default function App() {
       <Section
         eyebrow="Usein kysyttyä"
         title="Entä jos projekti tuottaa jäsenilleen poikkeuksellisen paljon arvoa?"
+        accent={3}
       >
         <div className="max-w-prose space-y-3 leading-relaxed text-ink-900">
           <p>

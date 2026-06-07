@@ -1,9 +1,14 @@
 import type { ReactNode } from "react";
+import { useReveal } from "../hooks/useReveal";
+import { Eyebrow } from "./Eyebrow";
+import { accentAt } from "./accents";
 
 type SectionProps = {
   id?: string;
   eyebrow: string;
   title: ReactNode;
+  /** Index into the accent cycle, so each section differs from its neighbour. */
+  accent?: number;
   /** Steps the surface up to the brightest white. Defaults to the resting body. */
   surface?: boolean;
   children: ReactNode;
@@ -11,9 +16,19 @@ type SectionProps = {
 
 /**
  * A section carved out of the page slab by a 1px top border (see
- * doc/aerodynamics.md). Padding lives inside; no margins, no gaps.
+ * doc/aerodynamics.md). The slab frame stays put; only the content inside rises
+ * and fades in, so the seams never break and nothing flutters loose.
  */
-export function Section({ id, eyebrow, title, surface = false, children }: SectionProps) {
+export function Section({
+  id,
+  eyebrow,
+  title,
+  accent = 0,
+  surface = false,
+  children,
+}: SectionProps) {
+  const { ref, visible } = useReveal<HTMLDivElement>();
+
   return (
     <section
       id={id}
@@ -21,17 +36,15 @@ export function Section({ id, eyebrow, title, surface = false, children }: Secti
         surface ? "bg-white-050" : "bg-white-100"
       }`}
     >
-      <Eyebrow>{eyebrow}</Eyebrow>
-      <h2 className="mt-1 text-[1.563rem] font-semibold leading-tight text-ink-900">{title}</h2>
-      <div className="mt-5">{children}</div>
+      <div ref={ref} data-visible={visible} className="reveal">
+        <Eyebrow accent={accentAt(accent)} visible={visible}>
+          {eyebrow}
+        </Eyebrow>
+        <h2 className="mt-2 text-[1.563rem] font-semibold leading-tight text-ink-900">
+          {title}
+        </h2>
+        <div className="mt-5">{children}</div>
+      </div>
     </section>
-  );
-}
-
-export function Eyebrow({ children }: { children: ReactNode }) {
-  return (
-    <span className="text-[0.8rem] font-semibold uppercase tracking-[0.04em] text-ink-700">
-      {children}
-    </span>
   );
 }
