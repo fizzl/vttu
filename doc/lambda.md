@@ -11,9 +11,12 @@ A single Go function handles form submissions and writes them to DynamoDB.
 
 ## Request handling
 
-- Accepts `POST` with a JSON body `{ "value": "..." }`.
-- Validates the input: non-empty after trimming, at most 1024 characters.
-- Stores `{ id, value, createdAt }` in the DynamoDB table; returns the new `id`.
+- Accepts `POST` with a JSON body `{ "email", "motivation", "acknowledged" }`.
+- Validates the input: `email` required, a parseable address, at most 320
+  characters; `motivation` optional, at most 4096 characters; `acknowledged`
+  must be `true`.
+- Stores `{ id, email, motivation, acknowledged, createdAt }` in the DynamoDB
+  table; returns the new `id`.
 - Non-`POST` methods receive `405`.
 
 ## CORS

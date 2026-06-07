@@ -18,6 +18,9 @@
   </head>
   <body>
     <div id="root"></div>
+    <!-- Runtime config: defines window.__VTTU_CONFIG__ (Lambda Function URL).
+         Overwritten at deploy time; see lib/vttu-stack.ts. -->
+    <script src="/config.js"></script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

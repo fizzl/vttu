@@ -1,23 +1,51 @@
 import { useState, type FormEvent } from "react";
+import { getSubmitUrl } from "../config";
 
 /**
- * The application form. It is INERT by design: submitting collects nothing and
- * sends nothing. It validates locally, shows an acknowledgement, and resets.
- * The backend Lambda + DynamoDB are deployed and ready to wire up later
- * (see doc/frontend.md "The Lambda is still there").
+ * The application form. On submit it POSTs { email, motivation, acknowledged }
+ * to the Lambda Function URL (read at runtime from window.__VTTU_CONFIG__; see
+ * ../config.ts), which stores the submission in DynamoDB.
  */
 export function ApplicationForm() {
   const [email, setEmail] = useState("");
   const [motivation, setMotivation] = useState("");
   const [acknowledged, setAcknowledged] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setStatus("Kiitos! Hakemuksesi on nyt VTTU töissä!");
-    setEmail("");
-    setMotivation("");
-    setAcknowledged(false);
+    if (submitting) return;
+
+    setStatus(null);
+    setError(null);
+
+    const submitUrl = getSubmitUrl();
+    if (!submitUrl) {
+      setError("Lomakkeen lähetys ei ole käytettävissä juuri nyt.");
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      const response = await fetch(submitUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, motivation, acknowledged }),
+      });
+      if (!response.ok) {
+        throw new Error(`Request failed with status ${response.status}`);
+      }
+      setStatus("Kiitos! Hakemuksesi on nyt VTTU töissä!");
+      setEmail("");
+      setMotivation("");
+      setAcknowledged(false);
+    } catch {
+      setError("Lähetys epäonnistui. Yritä myöhemmin uudelleen.");
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   return (
@@ -100,14 +128,19 @@ export function ApplicationForm() {
       <div className="flex flex-wrap items-center gap-4 border-t border-white-300 bg-white-100 px-6 py-5">
         <button
           type="submit"
-          disabled={!acknowledged}
+          disabled={!acknowledged || submitting}
           className="rounded-sm bg-orange-500 px-5 py-2 font-semibold text-white-050 transition-transform duration-150 hover:bg-orange-300 active:translate-y-px active:scale-[0.98] active:bg-orange-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-500 disabled:cursor-not-allowed disabled:bg-white-300 disabled:text-ink-500 disabled:active:translate-y-0 disabled:active:scale-100 motion-reduce:transition-none"
         >
-          Lähetä hakemus
+          {submitting ? "Lähetetään…" : "Lähetä hakemus"}
         </button>
         {status && (
           <p role="status" className="text-[0.9rem] font-semibold text-ink-700">
             {status}
+          </p>
+        )}
+        {error && (
+          <p role="alert" className="text-[0.9rem] font-semibold text-orange-600">
+            {error}
           </p>
         )}
       </div>

@@ -9,6 +9,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"net/mail"
 	"os"
 	"strings"
 	"time"
@@ -21,14 +22,23 @@ import (
 )
 
 type submissionRequest struct {
-	Value string `json:"value"`
+	Email        string `json:"email"`
+	Motivation   string `json:"motivation"`
+	Acknowledged bool   `json:"acknowledged"`
 }
 
 type submissionItem struct {
-	ID        string `dynamodbav:"id"`
-	Value     string `dynamodbav:"value"`
-	CreatedAt string `dynamodbav:"createdAt"`
+	ID           string `dynamodbav:"id"`
+	Email        string `dynamodbav:"email"`
+	Motivation   string `dynamodbav:"motivation"`
+	Acknowledged bool   `dynamodbav:"acknowledged"`
+	CreatedAt    string `dynamodbav:"createdAt"`
 }
+
+const (
+	maxEmailLength      = 320
+	maxMotivationLength = 4096
+)
 
 type handler struct {
 	tableName string
@@ -75,12 +85,20 @@ func (h *handler) handle(ctx context.Context, req events.LambdaFunctionURLReques
 		return jsonResponse(400, "invalid request body"), nil
 	}
 
-	payload.Value = strings.TrimSpace(payload.Value)
-	if payload.Value == "" {
-		return jsonResponse(400, "value is required"), nil
+	payload.Email = strings.TrimSpace(payload.Email)
+	payload.Motivation = strings.TrimSpace(payload.Motivation)
+
+	if payload.Email == "" {
+		return jsonResponse(400, "email is required"), nil
 	}
-	if len(payload.Value) > 1024 {
-		return jsonResponse(400, "value must be at most 1024 characters"), nil
+	if len(payload.Email) > maxEmailLength || !validEmail(payload.Email) {
+		return jsonResponse(400, "email is invalid"), nil
+	}
+	if len(payload.Motivation) > maxMotivationLength {
+		return jsonResponse(400, "motivation is too long"), nil
+	}
+	if !payload.Acknowledged {
+		return jsonResponse(400, "acknowledgement is required"), nil
 	}
 
 	id, err := randomID()
@@ -90,9 +108,11 @@ func (h *handler) handle(ctx context.Context, req events.LambdaFunctionURLReques
 	}
 
 	item, err := attributevalue.MarshalMap(submissionItem{
-		ID:        id,
-		Value:     payload.Value,
-		CreatedAt: time.Now().UTC().Format(time.RFC3339),
+		ID:           id,
+		Email:        payload.Email,
+		Motivation:   payload.Motivation,
+		Acknowledged: payload.Acknowledged,
+		CreatedAt:    time.Now().UTC().Format(time.RFC3339),
 	})
 	if err != nil {
 		log.Printf("failed to marshal item: %v", err)
@@ -121,6 +141,12 @@ func jsonResponse(code int, message string) events.LambdaFunctionURLResponse {
 		Headers:    map[string]string{"Content-Type": "application/json"},
 		Body:       fmt.Sprintf(`{"message":%q}`, message),
 	}
+}
+
+func validEmail(value string) bool {
+	addr, err := mail.ParseAddress(value)
+	// Reject display-name forms like "Name <a@b.fi>"; require the bare address.
+	return err == nil && addr.Address == value
 }
 
 func randomID() (string, error) {

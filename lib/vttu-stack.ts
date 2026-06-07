@@ -119,15 +119,21 @@ export class VttuStack extends Stack {
       ]
     });
 
-    // The React + Tailwind frontend is built by Vite into web/dist. The form is
-    // currently inert (see doc/frontend.md), so no config.js with the Function
-    // URL is injected; reintroduce a Source.data('config.js', ...) here when a
-    // future version needs to call the Lambda.
+    // The React + Tailwind frontend is built by Vite into web/dist. The form
+    // reads the Lambda Function URL at runtime from window.__VTTU_CONFIG__ (set
+    // by config.js), so the frontend needs no build-time configuration. We
+    // generate config.js here with the live Function URL and list it AFTER the
+    // built assets so it overwrites the empty web/public/config.js placeholder.
+    const runtimeConfig = s3deploy.Source.data(
+      'config.js',
+      `window.__VTTU_CONFIG__ = { submitUrl: ${JSON.stringify(functionUrl.url)} };\n`
+    );
+
     new s3deploy.BucketDeployment(this, 'DeployWebsite', {
       destinationBucket: websiteBucket,
       distribution,
       distributionPaths: ['/*'],
-      sources: [s3deploy.Source.asset(path.join(__dirname, '../web/dist'))]
+      sources: [s3deploy.Source.asset(path.join(__dirname, '../web/dist')), runtimeConfig]
     });
 
     new route53.ARecord(this, 'RootAliasRecord', {

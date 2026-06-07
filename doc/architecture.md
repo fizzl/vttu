@@ -9,8 +9,8 @@ AWS CDK project that deploys a static website with a small submission backend.
 - Route 53 alias records (A + AAAA) for both hostnames
 - ACM certificate for both names (in `us-east-1`, required by CloudFront)
 - A single Go Lambda exposed via a Function URL (CORS configured on the URL)
-- DynamoDB table storing submitted strings
-- React + Tailwind single-page frontend with an application form (currently inert)
+- DynamoDB table storing form submissions
+- React + Tailwind single-page frontend with a working application form
 
 ## Stacks
 
@@ -31,9 +31,11 @@ The deployment region defaults to `eu-central-1` and can be overridden with
 
 - **Static content:** browser → CloudFront → S3 (private, served via Origin
   Access Control). `403`/`404` responses fall back to `/index.html`.
-- **Form submission:** browser → Lambda Function URL → DynamoDB. This path is
-  built and deployed but currently unused; the frontend form is inert and sends
-  nothing (see [frontend](frontend.md)).
+- **Form submission:** browser → Lambda Function URL → DynamoDB. The form reads
+  the Function URL at runtime from `window.__VTTU_CONFIG__`, which is defined by
+  a `config.js` the deployment generates with the live URL (see
+  `web/src/config.ts` and the `DeployWebsite` deployment in
+  `lib/vttu-stack.ts`). No build-time configuration is required.
 
 ## Project structure
 

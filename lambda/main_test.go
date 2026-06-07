@@ -23,11 +23,45 @@ func TestHandlerRejectsNonPost(t *testing.T) {
 	}
 }
 
-func TestHandlerRejectsEmptyValue(t *testing.T) {
+func TestHandlerRejectsEmptyEmail(t *testing.T) {
 	h := &handler{}
 
 	resp, err := h.handle(context.Background(), events.LambdaFunctionURLRequest{
-		Body: `{"value":"   "}`,
+		Body: `{"email":"   ","acknowledged":true}`,
+		RequestContext: events.LambdaFunctionURLRequestContext{
+			HTTP: events.LambdaFunctionURLRequestContextHTTPDescription{Method: "POST"},
+		},
+	})
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if resp.StatusCode != 400 {
+		t.Fatalf("expected 400, got %d", resp.StatusCode)
+	}
+}
+
+func TestHandlerRejectsInvalidEmail(t *testing.T) {
+	h := &handler{}
+
+	resp, err := h.handle(context.Background(), events.LambdaFunctionURLRequest{
+		Body: `{"email":"not-an-email","acknowledged":true}`,
+		RequestContext: events.LambdaFunctionURLRequestContext{
+			HTTP: events.LambdaFunctionURLRequestContextHTTPDescription{Method: "POST"},
+		},
+	})
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if resp.StatusCode != 400 {
+		t.Fatalf("expected 400, got %d", resp.StatusCode)
+	}
+}
+
+func TestHandlerRejectsUnacknowledged(t *testing.T) {
+	h := &handler{}
+
+	resp, err := h.handle(context.Background(), events.LambdaFunctionURLRequest{
+		Body: `{"email":"a@b.fi","acknowledged":false}`,
 		RequestContext: events.LambdaFunctionURLRequestContext{
 			HTTP: events.LambdaFunctionURLRequestContextHTTPDescription{Method: "POST"},
 		},
