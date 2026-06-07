@@ -10,6 +10,9 @@ export function ApplicationForm() {
   const [email, setEmail] = useState("");
   const [motivation, setMotivation] = useState("");
   const [acknowledged, setAcknowledged] = useState(false);
+  // Honeypot: hidden from real users, so it should always stay empty. Bots that
+  // fill every field trip it and the Lambda rejects the submission.
+  const [website, setWebsite] = useState("");
   const [status, setStatus] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -32,7 +35,7 @@ export function ApplicationForm() {
       const response = await fetch(submitUrl, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, motivation, acknowledged }),
+        body: JSON.stringify({ email, motivation, acknowledged, website }),
       });
       if (!response.ok) {
         throw new Error(`Request failed with status ${response.status}`);
@@ -41,6 +44,7 @@ export function ApplicationForm() {
       setEmail("");
       setMotivation("");
       setAcknowledged(false);
+      setWebsite("");
     } catch {
       setError("Lähetys epäonnistui. Yritä myöhemmin uudelleen.");
     } finally {
@@ -50,6 +54,24 @@ export function ApplicationForm() {
 
   return (
     <form className="border border-white-300" onSubmit={handleSubmit} noValidate>
+      {/*
+        Honeypot field. Hidden off-screen rather than with display:none (some
+        bots skip hidden fields) and kept out of the tab order and a11y tree.
+        Real users never fill it; the Lambda rejects any non-empty value.
+      */}
+      <div className="absolute left-[-9999px] top-[-9999px] h-0 w-0 overflow-hidden" aria-hidden="true">
+        <label htmlFor="website">Kotisivu</label>
+        <input
+          id="website"
+          name="website"
+          type="text"
+          tabIndex={-1}
+          autoComplete="off"
+          value={website}
+          onChange={(e) => setWebsite(e.target.value)}
+        />
+      </div>
+
       <div className="border-b border-white-300 bg-white-050 p-6">
         <label htmlFor="email" className="block font-semibold text-ink-900">
           Sähköposti

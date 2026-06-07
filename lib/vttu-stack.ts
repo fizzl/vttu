@@ -42,6 +42,10 @@ export class VttuStack extends Stack {
       partitionKey: { name: 'id', type: dynamodb.AttributeType.STRING },
       billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
       pointInTimeRecoverySpecification: { pointInTimeRecoveryEnabled: true },
+      // Per-IP rate-limit counters (see lambda/main.go) set this attribute so
+      // DynamoDB expires them automatically. Submissions never set it, so they
+      // are never reaped.
+      timeToLiveAttribute: 'expiresAt',
       removalPolicy: RemovalPolicy.RETAIN
     });
 
@@ -78,7 +82,10 @@ export class VttuStack extends Stack {
       }),
       timeout: Duration.seconds(10),
       environment: {
-        TABLE_NAME: table.tableName
+        TABLE_NAME: table.tableName,
+        // Tier 0 Origin check in the handler. Mirrors the Function URL CORS
+        // allowlist so the handler also rejects scripts that omit/spoof Origin.
+        ALLOWED_ORIGINS: [`https://${domainName}`, `https://${subDomain}`].join(',')
       }
     });
 
