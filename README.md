@@ -11,5 +11,4 @@ Tämä repo sisältää vttu.fi sivuston lähdekoodin.
 - [Installation & deployment setup](INSTALL.md)
 - [Architecture](doc/architecture.md)
 - [Local development](doc/local-development.md)
-- [Frontend](doc/frontend.md)
 - [Lambda backend](doc/lambda.md)

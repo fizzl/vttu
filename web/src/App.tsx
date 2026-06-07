@@ -1,5 +1,5 @@
 import { ApplicationForm } from "./components/ApplicationForm";
-import { Eyebrow, Section } from "./components/Section";
+import { Section } from "./components/Section";
 import { Wordmark } from "./components/Wordmark";
 
 const principles = [
@@ -119,8 +119,8 @@ export default function App() {
         <dl className="divide-y divide-white-300 border border-white-300">
           {facts.map(([key, val]) => (
             <div key={key} className="grid sm:grid-cols-[16rem_1fr] sm:divide-x sm:divide-white-300">
-              <dt className="bg-white-100 px-4 py-3 font-semibold text-ink-700">{key}</dt>
-              <dd className="bg-white-050 px-4 py-3 text-ink-900">{val}</dd>
+              <dt className="bg-white-100 px-3 py-2 font-semibold text-ink-700">{key}</dt>
+              <dd className="bg-white-050 px-3 py-2 text-ink-900">{val}</dd>
             </div>
           ))}
         </dl>
@@ -132,17 +132,17 @@ export default function App() {
           <table className="w-full border-collapse text-left">
             <thead>
               <tr className="bg-white-100 text-[0.8rem] uppercase tracking-[0.04em] text-ink-700">
-                <th className="px-4 py-3 font-semibold">Seutu</th>
-                <th className="px-4 py-3 font-semibold">Peruspalkka</th>
-                <th className="px-4 py-3 font-semibold">Indeksikorotus</th>
-                <th className="px-4 py-3 font-semibold">Yhteensä / kk</th>
+                <th className="px-3 py-2 font-semibold">Seutu</th>
+                <th className="px-3 py-2 font-semibold">Peruspalkka</th>
+                <th className="px-3 py-2 font-semibold">Indeksikorotus</th>
+                <th className="px-3 py-2 font-semibold">Yhteensä / kk</th>
               </tr>
             </thead>
             <tbody>
               {payRows.map((row) => (
-                <tr key={row[0]} className="border-t border-white-300 even:bg-yellow-100">
+                <tr key={row[0]} className="border-t border-white-300">
                   {row.map((cell, i) => (
-                    <td key={i} className={`px-4 py-3 text-ink-900 ${i === 0 ? "font-semibold" : ""}`}>
+                    <td key={i} className={`px-3 py-2 text-ink-900 ${i === 0 ? "font-semibold" : ""}`}>
                       {cell}
                     </td>
                   ))}
@@ -176,17 +176,6 @@ export default function App() {
             tulospalkkioita ei makseta, mutta peruspalkanmaksu jatkuu keskeytyksettä. Tämä tekee
             riskistä hallittavan ja kannustaa yrittämään kunnianhimoisesti.
           </p>
-        </div>
-        <div className="mt-5 flex flex-wrap gap-2">
-          <span className="rounded-sm border border-white-300 bg-white-050 px-3 py-1 text-[0.8rem] font-semibold text-ink-700">
-            Projektilähtöinen
-          </span>
-          <span className="rounded-sm border border-white-300 bg-yellow-300 px-3 py-1 text-[0.8rem] font-semibold text-ink-900">
-            20 % tulevaisuusrahastoon
-          </span>
-          <span className="rounded-sm border border-orange-500 px-3 py-1 text-[0.8rem] font-semibold text-orange-600">
-            Palkanmaksu käynnissä
-          </span>
         </div>
       </Section>
 
@@ -239,7 +228,9 @@ export default function App() {
       <footer className="border-t border-white-300 bg-white-100 px-6 py-8 sm:px-10">
         <div className="flex items-center gap-3">
           <Wordmark className="text-[1.25rem]" />
-          <Eyebrow>x Maxpower, &copy; 2026</Eyebrow>
+          <span className="text-[0.8rem] font-semibold tracking-[0.04em] text-ink-700">
+            x Maxpower, &copy; 2026
+          </span>
         </div>
         <p className="mt-3 text-[0.8rem] text-ink-500">Tämä sivu on satiiria ja höpöhöpöä.</p>
       </footer>
