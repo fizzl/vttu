@@ -38,7 +38,7 @@ type submissionRequest struct {
 	Website string `json:"website"`
 	// Altcha is the base64-encoded ALTCHA solution produced by the form widget.
 	// The handler re-derives and verifies it before accepting the submission.
-	// See doc/securing_the_lambda.md (Tier 1A).
+	// See doc/lambda.md (Tier 1A).
 	Altcha string `json:"altcha"`
 }
 
@@ -75,10 +75,10 @@ const (
 	maxMotivationLength = 4096
 	// Tier 0 abuse control: cap how many submissions a single source IP can make
 	// per rolling hour. Generous for a real applicant, low enough to stop one
-	// machine hammering the endpoint. See doc/securing_the_lambda.md.
+	// machine hammering the endpoint. See doc/lambda.md.
 	maxSubmissionsPerHour = 10
 
-	// Tier 1A ALTCHA (see doc/securing_the_lambda.md). The widget brute-forces a
+	// Tier 1A ALTCHA (see doc/lambda.md). The widget brute-forces a
 	// number in [0, altchaMaxNumber]; this sets the proof-of-work cost. One
 	// million SHA-256 hashes is a fraction of a second on a real device but makes
 	// mass spam expensive.
@@ -177,7 +177,7 @@ func (h *handler) handle(ctx context.Context, req events.LambdaFunctionURLReques
 	// Tier 0: reject requests whose Origin header is not on the allowlist. This
 	// is trivially spoofable but filters the low-effort scripts that do not
 	// bother to set it. CORS already blocks other sites' browser JS; this also
-	// stops the lazy curl caller. See doc/securing_the_lambda.md.
+	// stops the lazy curl caller. See doc/lambda.md.
 	if !h.originAllowed(req.Headers) {
 		return jsonResponse(403, "forbidden"), nil
 	}
@@ -225,7 +225,7 @@ func (h *handler) handle(ctx context.Context, req events.LambdaFunctionURLReques
 
 	// Tier 1A: require a valid, unexpired, single-use ALTCHA proof-of-work. This
 	// is the real bot filter; the Tier 0 checks above only stop the laziest
-	// abuse. See doc/securing_the_lambda.md.
+	// abuse. See doc/lambda.md.
 	if !h.altchaVerified(ctx, payload.Altcha) {
 		return jsonResponse(400, "challenge verification failed"), nil
 	}

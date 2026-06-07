@@ -40,8 +40,7 @@ The Function URL is **public and unauthenticated**. The Lambda is configured
 with reserved concurrency to cap the cost from a flood of requests. This
 throttles abuse but does not block it.
 
-On top of that, the handler runs the **Tier 0** filters from
-[securing_the_lambda](securing_the_lambda.md):
+On top of that, the handler runs these **Tier 0** filters:
 
 - **Honeypot.** The form has a CSS-hidden `website` field that real users never
   see. Any non-empty value marks the request as a bot and is rejected.
@@ -67,9 +66,14 @@ challenge — the real bot filter:
   (TTL via `expiresAt`) so each solution is single-use (replay protection).
 - **Secret.** The HMAC key is an SSM SecureString (`/vttu/altcha-hmac-secret`,
   env `ALTCHA_SECRET_PARAM`), read once at cold start and cached on the handler.
-  It must be created out of band before the first deploy — see
-  [securing_the_lambda](securing_the_lambda.md).
+  CDK only references the parameter — it cannot create a SecureString value — so
+  it must be created out of band before the first deploy:
+
+  ```bash
+  aws ssm put-parameter --name /vttu/altcha-hmac-secret \
+    --type SecureString --value "$(openssl rand -hex 32)"
+  ```
 
 These together stop lazy `curl`/bot abuse and make mass spam expensive. For
-organized abuse, put the Function URL behind CloudFront + AWS WAF — see
-[securing_the_lambda](securing_the_lambda.md) Tier 2.
+organized abuse, the next step is to put the Function URL behind CloudFront + AWS
+WAF.

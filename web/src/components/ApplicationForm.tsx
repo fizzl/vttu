@@ -3,7 +3,7 @@ import { getSubmitUrl } from "../config";
 // Side-effect import: registers the <altcha-widget> custom element. The widget
 // fetches a signed proof-of-work challenge from the Lambda (GET) and solves it
 // in the browser; the Lambda verifies the solution on submit (POST). See
-// doc/securing_the_lambda.md (Tier 1A).
+// doc/lambda.md (Tier 1A).
 import "altcha";
 
 // The challenge endpoint is the same Lambda Function URL the form POSTs to; a

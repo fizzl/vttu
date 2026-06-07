@@ -28,11 +28,11 @@ notices.
 ## The boundary
 
 Prefer static content. Compose dynamically only where the content depends on
-something the server knows and a file cannot hold. The application form is
-**inert**: it runs entirely in the browser and sends nothing. The Lambda and
-DynamoDB table are deployed and ready, so wiring it up later is a small change.
+something the server knows and a file cannot hold. The one dynamic piece is the
+application form: it posts to the Go Lambda, which verifies an ALTCHA
+proof-of-work and writes the submission to DynamoDB. Everything else is static.
 
 Complexity is a cost paid forever. Spend it only when the alternative costs more.
 
-See also: [architecture](architecture.md), [frontend](frontend.md),
-[dazzle](dazzle.md), [aerodynamics](aerodynamics.md).
+See also: [architecture](architecture.md), [dazzle](dazzle.md),
+[aerodynamics](aerodynamics.md).

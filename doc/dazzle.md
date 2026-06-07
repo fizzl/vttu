@@ -182,10 +182,9 @@ genuinely lifted, and it returns to flush rest the instant it lands.
 - **60fps or it does not ship.** Transform and opacity only; never animate layout.
 - **Nothing blocks.** Motion decorates an interaction that already succeeded.
 
-> We deliberately dropped the decorative Three.js hero from the earlier draft.
-> The ambition outran the point of the page. If a quiet bit of depth is ever
-> wanted again, add it as one isolated React component behind a
-> `prefers-reduced-motion` guard, and nowhere else.
+> No heavy 3D or decorative WebGL. If a quiet bit of depth is ever wanted, add it
+> as one isolated React component behind a `prefers-reduced-motion` guard, and
+> nowhere else.
 
 ## Typography, Cabin
 

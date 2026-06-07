@@ -57,10 +57,10 @@ export class VttuStack extends Stack {
       removalPolicy: RemovalPolicy.RETAIN
     });
 
-    // ALTCHA HMAC signing key (Tier 1A in doc/securing_the_lambda.md). Stored as
+    // ALTCHA HMAC signing key (Tier 1A in doc/lambda.md). Stored as
     // a free SSM SecureString that CDK only references, never creates: CDK cannot
     // generate a SecureString value, so it is provisioned once out of band (see
-    // doc/securing_the_lambda.md for the one-liner). The Lambda reads it once at
+    // doc/lambda.md for the one-liner). The Lambda reads it once at
     // cold start and caches it.
     const altchaSecretParameterName = '/vttu/altcha-hmac-secret';
     const altchaSecret = ssm.StringParameter.fromSecureStringParameterAttributes(this, 'AltchaSecret', {

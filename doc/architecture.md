@@ -47,5 +47,5 @@ The deployment region defaults to `eu-central-1` and can be overridden with
   the Tailwind theme, `web/dist` is the built bundle uploaded to S3
 - `/.github/workflows/deploy.yml` — GitHub Actions deployment workflow
 
-See also: [frontend](frontend.md), [lambda](lambda.md),
-[local development](local-development.md).
+See also: [lambda](lambda.md), [local development](local-development.md),
+[aesthetics](aesthetics.md).
