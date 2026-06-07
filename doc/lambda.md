@@ -11,15 +11,20 @@ A single Go function handles form submissions and writes them to DynamoDB.
 
 ## Request handling
 
-- Accepts `POST` with a JSON body
-  `{ "email", "motivation", "acknowledged", "website" }`.
+- Serves two methods on the one Function URL:
+  - `GET` returns a fresh signed **ALTCHA** challenge for the form widget to
+    solve (see Cost & abuse controls below).
+  - `POST` accepts a submission with a JSON body
+    `{ "email", "motivation", "acknowledged", "website", "altcha" }`.
 - Validates the input: `email` required, a parseable address, at most 320
   characters; `motivation` optional, at most 4096 characters; `acknowledged`
-  must be `true`. `website` is the honeypot (see below) and must be empty.
+  must be `true`. `website` is the honeypot (see below) and must be empty;
+  `altcha` is the ALTCHA solution and must verify.
 - Stores `{ id, email, motivation, acknowledged, createdAt }` in the DynamoDB
   table; returns the new `id`.
-- Non-`POST` methods receive `405`; a disallowed `Origin` receives `403`; a
-  source IP over the rate limit receives `429`.
+- Unsupported methods receive `405`; a disallowed `Origin` receives `403`; a
+  failed/missing ALTCHA solution receives `400`; a source IP over the rate limit
+  receives `429`.
 
 ## CORS
 
@@ -50,6 +55,21 @@ On top of that, the handler runs the **Tier 0** filters from
   IP gets `429`. The check fails open so a DynamoDB hiccup never blocks a real
   applicant.
 
-These stop lazy `curl`/bot abuse but not a determined human who reads the page.
-For that, add a challenge (ALTCHA) or put the Function URL behind CloudFront +
-AWS WAF — see [securing_the_lambda](securing_the_lambda.md) Tiers 1 and 2.
+On top of Tier 0, the handler runs the **Tier 1A ALTCHA** proof-of-work
+challenge — the real bot filter:
+
+- **Challenge (`GET`).** Returns `{ algorithm, challenge, maxnumber, salt,
+  signature }`. `salt` carries an `expires` timestamp; `signature` is an HMAC of
+  the challenge hash. The widget brute-forces the number whose `SHA-256(salt+n)`
+  equals `challenge`.
+- **Verify (`POST`).** The handler re-derives the hash, checks its HMAC
+  signature and the salt's expiry, then records `altcha#<hash>` in the table
+  (TTL via `expiresAt`) so each solution is single-use (replay protection).
+- **Secret.** The HMAC key is an SSM SecureString (`/vttu/altcha-hmac-secret`,
+  env `ALTCHA_SECRET_PARAM`), read once at cold start and cached on the handler.
+  It must be created out of band before the first deploy — see
+  [securing_the_lambda](securing_the_lambda.md).
+
+These together stop lazy `curl`/bot abuse and make mass spam expensive. For
+organized abuse, put the Function URL behind CloudFront + AWS WAF — see
+[securing_the_lambda](securing_the_lambda.md) Tier 2.

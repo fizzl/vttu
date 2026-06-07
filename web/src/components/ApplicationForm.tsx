@@ -1,10 +1,20 @@
-import { useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import { getSubmitUrl } from "../config";
+// Side-effect import: registers the <altcha-widget> custom element. The widget
+// fetches a signed proof-of-work challenge from the Lambda (GET) and solves it
+// in the browser; the Lambda verifies the solution on submit (POST). See
+// doc/securing_the_lambda.md (Tier 1A).
+import "altcha";
+
+// The challenge endpoint is the same Lambda Function URL the form POSTs to; a
+// GET returns a fresh ALTCHA challenge.
+const challengeUrl = getSubmitUrl();
 
 /**
- * The application form. On submit it POSTs { email, motivation, acknowledged }
- * to the Lambda Function URL (read at runtime from window.__VTTU_CONFIG__; see
- * ../config.ts), which stores the submission in DynamoDB.
+ * The application form. On submit it POSTs
+ * { email, motivation, acknowledged, altcha } to the Lambda Function URL (read
+ * at runtime from window.__VTTU_CONFIG__; see ../config.ts), which verifies the
+ * ALTCHA solution and stores the submission in DynamoDB.
  */
 export function ApplicationForm() {
   const [email, setEmail] = useState("");
@@ -13,9 +23,31 @@ export function ApplicationForm() {
   // Honeypot: hidden from real users, so it should always stay empty. Bots that
   // fill every field trip it and the Lambda rejects the submission.
   const [website, setWebsite] = useState("");
+  // The base64 ALTCHA solution the widget produces once it verifies. Empty until
+  // the user solves the challenge; the Lambda rejects submissions without it.
+  const [altcha, setAltcha] = useState("");
   const [status, setStatus] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const widgetRef = useRef<HTMLElement>(null);
+
+  // Mirror the widget's verification state into `altcha`. It emits `statechange`
+  // with the solution payload once verified, and reverts on expiry/error.
+  useEffect(() => {
+    const widget = widgetRef.current;
+    if (!widget) return;
+    function onStateChange(event: Event) {
+      const detail = (event as CustomEvent<{ state?: string; payload?: string }>).detail;
+      setAltcha(detail?.state === "verified" && detail.payload ? detail.payload : "");
+    }
+    widget.addEventListener("statechange", onStateChange);
+    return () => widget.removeEventListener("statechange", onStateChange);
+  }, []);
+
+  function resetWidget() {
+    setAltcha("");
+    (widgetRef.current as { reset?: () => void } | null)?.reset?.();
+  }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -24,18 +56,17 @@ export function ApplicationForm() {
     setStatus(null);
     setError(null);
 
-    const submitUrl = getSubmitUrl();
-    if (!submitUrl) {
+    if (!challengeUrl) {
       setError("Lomakkeen lähetys ei ole käytettävissä juuri nyt.");
       return;
     }
 
     setSubmitting(true);
     try {
-      const response = await fetch(submitUrl, {
+      const response = await fetch(challengeUrl, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, motivation, acknowledged, website }),
+        body: JSON.stringify({ email, motivation, acknowledged, website, altcha }),
       });
       if (!response.ok) {
         throw new Error(`Request failed with status ${response.status}`);
@@ -45,8 +76,12 @@ export function ApplicationForm() {
       setMotivation("");
       setAcknowledged(false);
       setWebsite("");
+      // The solution is single-use server-side; force a fresh one for any
+      // subsequent submission.
+      resetWidget();
     } catch {
       setError("Lähetys epäonnistui. Yritä myöhemmin uudelleen.");
+      resetWidget();
     } finally {
       setSubmitting(false);
     }
@@ -147,10 +182,16 @@ export function ApplicationForm() {
         </label>
       </div>
 
+      {challengeUrl && (
+        <div className="border-t border-white-300 bg-white-050 p-6">
+          <altcha-widget ref={widgetRef} challenge={challengeUrl} />
+        </div>
+      )}
+
       <div className="flex flex-wrap items-center gap-4 border-t border-white-300 bg-white-100 px-6 py-5">
         <button
           type="submit"
-          disabled={!acknowledged || submitting}
+          disabled={!acknowledged || submitting || (!!challengeUrl && !altcha)}
           className="rounded-sm bg-orange-500 px-5 py-2 font-semibold text-white-050 transition-transform duration-150 hover:bg-orange-300 active:translate-y-px active:scale-[0.98] active:bg-orange-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-500 disabled:cursor-not-allowed disabled:bg-white-300 disabled:text-ink-500 disabled:active:translate-y-0 disabled:active:scale-100 motion-reduce:transition-none"
         >
           {submitting ? "Lähetetään…" : "Lähetä hakemus"}

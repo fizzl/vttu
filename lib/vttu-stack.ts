@@ -10,6 +10,7 @@ import * as route53 from 'aws-cdk-lib/aws-route53';
 import * as targets from 'aws-cdk-lib/aws-route53-targets';
 import * as s3 from 'aws-cdk-lib/aws-s3';
 import * as s3deploy from 'aws-cdk-lib/aws-s3-deployment';
+import * as ssm from 'aws-cdk-lib/aws-ssm';
 import { Construct } from 'constructs';
 
 export interface VttuStackProps extends StackProps {
@@ -41,12 +42,29 @@ export class VttuStack extends Stack {
     const table = new dynamodb.Table(this, 'SubmissionsTable', {
       partitionKey: { name: 'id', type: dynamodb.AttributeType.STRING },
       billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
+      // Hard ceiling on on-demand throughput so an unattended flood cannot run up
+      // an unbounded bill. Above these, DynamoDB throttles (the PutItem fails)
+      // rather than billing the spike. Far above real traffic (a few writes/day),
+      // low enough to bound a worst-case month to a few tens of dollars. Note the
+      // per-IP rate-limit counter means each valid submission costs two writes.
+      maxWriteRequestUnits: 10,
+      maxReadRequestUnits: 10,
       pointInTimeRecoverySpecification: { pointInTimeRecoveryEnabled: true },
       // Per-IP rate-limit counters (see lambda/main.go) set this attribute so
       // DynamoDB expires them automatically. Submissions never set it, so they
       // are never reaped.
       timeToLiveAttribute: 'expiresAt',
       removalPolicy: RemovalPolicy.RETAIN
+    });
+
+    // ALTCHA HMAC signing key (Tier 1A in doc/securing_the_lambda.md). Stored as
+    // a free SSM SecureString that CDK only references, never creates: CDK cannot
+    // generate a SecureString value, so it is provisioned once out of band (see
+    // doc/securing_the_lambda.md for the one-liner). The Lambda reads it once at
+    // cold start and caches it.
+    const altchaSecretParameterName = '/vttu/altcha-hmac-secret';
+    const altchaSecret = ssm.StringParameter.fromSecureStringParameterAttributes(this, 'AltchaSecret', {
+      parameterName: altchaSecretParameterName
     });
 
     const handler = new lambda.Function(this, 'SubmissionHandler', {
@@ -85,19 +103,27 @@ export class VttuStack extends Stack {
         TABLE_NAME: table.tableName,
         // Tier 0 Origin check in the handler. Mirrors the Function URL CORS
         // allowlist so the handler also rejects scripts that omit/spoof Origin.
-        ALLOWED_ORIGINS: [`https://${domainName}`, `https://${subDomain}`].join(',')
+        ALLOWED_ORIGINS: [`https://${domainName}`, `https://${subDomain}`].join(','),
+        // Tier 1A: SSM parameter holding the ALTCHA HMAC key. Read once at cold
+        // start (see lambda/main.go); unset means ALTCHA is disabled.
+        ALTCHA_SECRET_PARAM: altchaSecretParameterName
       }
     });
 
     table.grantWriteData(handler);
+    // Read access to the ALTCHA secret. For a SecureString on the default
+    // aws/ssm KMS key, the key policy already grants decrypt to in-account
+    // callers via SSM, so ssm:GetParameter is sufficient — no extra KMS grant.
+    altchaSecret.grantRead(handler);
 
     const functionUrl = handler.addFunctionUrl({
       authType: lambda.FunctionUrlAuthType.NONE,
       cors: {
         // Function URL CORS handles the OPTIONS preflight automatically; only the
-        // actual request method (POST) is listed here. OPTIONS is not a valid
-        // value for AllowMethods and is rejected at deploy time.
-        allowedMethods: [lambda.HttpMethod.POST],
+        // actual request methods are listed here. GET serves the ALTCHA challenge
+        // to the widget; POST submits the form. OPTIONS is not a valid value for
+        // AllowMethods and is rejected at deploy time.
+        allowedMethods: [lambda.HttpMethod.GET, lambda.HttpMethod.POST],
         allowedOrigins: [`https://${domainName}`, `https://${subDomain}`],
         allowedHeaders: ['content-type'],
         maxAge: Duration.hours(1)
