@@ -6,21 +6,30 @@
     "node": ">=24"
   },
   "scripts": {
+    "dev": "vite",
     "build": "npm run build:web && npm run build:cdk",
-    "build:web": "tsc -p tsconfig.web.json",
+    "build:web": "vite build",
     "build:cdk": "tsc -p tsconfig.json",
     "test": "npm run test:lambda",
     "test:lambda": "cd lambda && go test ./...",
     "synth": "npm run build && cdk synth"
   },
   "devDependencies": {
+    "@tailwindcss/vite": "^4.1.0",
     "@types/node": "^24.0.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "@vitejs/plugin-react": "^5.0.0",
     "aws-cdk": "^2.1029.1",
+    "tailwindcss": "^4.1.0",
     "ts-node": "^10.9.2",
-    "typescript": "^5.8.3"
+    "typescript": "^5.8.3",
+    "vite": "^7.0.0"
   },
   "dependencies": {
     "aws-cdk-lib": "^2.205.0",
-    "constructs": "^10.4.2"
+    "constructs": "^10.4.2",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
   }
 }

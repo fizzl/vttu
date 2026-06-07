@@ -1,0 +1,52 @@
+@import "tailwindcss";
+
+/*
+ * The Dazzle design system, registered once as Tailwind theme tokens.
+ * See doc/dazzle.md. Whites are subtle shades, the brightest a whisper of blue;
+ * ink carries text and structure; yellow is the field, orange the spark.
+ */
+@theme {
+  /* Ink — text and structure, a clean near-neutral, faintly cool */
+  --color-ink-900: #1a1c20;
+  --color-ink-700: #3b3e44;
+  --color-ink-500: #70747c;
+
+  /* Whites — subtle shades of white, the brightest a whisper blue */
+  --color-white-300: #d7dbe0;
+  --color-white-200: #e9ecf1;
+  --color-white-100: #f4f6f9;
+  --color-white-050: #fbfcff;
+
+  /* Yellow — the contrast field (attention) */
+  --color-yellow-500: #f5c518;
+  --color-yellow-300: #f9d85c;
+  --color-yellow-100: #fcefc1;
+
+  /* Orange — the accent (action) */
+  --color-orange-600: #d9531e;
+  --color-orange-500: #f26419;
+  --color-orange-300: #f79c6a;
+
+  /* Cabin everywhere; system fallback. */
+  --font-sans: "Cabin", system-ui, sans-serif;
+
+  /* 2px radius is the whole vocabulary (see doc/aerodynamics.md). */
+  --radius-sm: 2px;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-sans);
+  background: var(--color-white-200);
+  color: var(--color-ink-900);
+  -webkit-font-smoothing: antialiased;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}

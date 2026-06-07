@@ -10,7 +10,7 @@ AWS CDK project that deploys a static website with a small submission backend.
 - ACM certificate for both names (in `us-east-1`, required by CloudFront)
 - A single Go Lambda exposed via a Function URL (CORS configured on the URL)
 - DynamoDB table storing submitted strings
-- HTML5/CSS/TypeScript frontend form that posts to the Lambda URL
+- React + Tailwind single-page frontend with an application form (currently inert)
 
 ## Stacks
 
@@ -31,7 +31,9 @@ The deployment region defaults to `eu-central-1` and can be overridden with
 
 - **Static content:** browser → CloudFront → S3 (private, served via Origin
   Access Control). `403`/`404` responses fall back to `/index.html`.
-- **Form submission:** browser → Lambda Function URL → DynamoDB.
+- **Form submission:** browser → Lambda Function URL → DynamoDB. This path is
+  built and deployed but currently unused; the frontend form is inert and sends
+  nothing (see [frontend](frontend.md)).
 
 ## Project structure
 
@@ -39,8 +41,8 @@ The deployment region defaults to `eu-central-1` and can be overridden with
 - `/lib/certificate-stack.ts` — ACM certificate stack (`us-east-1`)
 - `/lib/vttu-stack.ts` — main infrastructure stack
 - `/lambda/main.go` — Lambda handler (Go)
-- `/web/public` — static site assets
-- `/web/src/app.ts` — frontend TypeScript source
+- `/web` — React + Tailwind frontend (Vite); `web/src` holds the components and
+  the Tailwind theme, `web/dist` is the built bundle uploaded to S3
 - `/.github/workflows/deploy.yml` — GitHub Actions deployment workflow
 
 See also: [frontend](frontend.md), [lambda](lambda.md),

@@ -1,45 +1,48 @@
 # Aesthetics
 
-Less is more. This project is built on the belief that the best code is the
-code you don't write, and the best system is the one with the fewest moving
-parts that still does the job.
+Less is more, within reason. An earlier draft of this project chased a
+no-framework, hand-rolled, pure-HTML ideal with a bespoke CSS design system and a
+Three.js hero. The ambition outran the payoff. This is a small satirical site; it
+does not need a hand-built platform under it. So we picked the boring, productive
+tools and pointed the effort at the page itself.
 
-## Principles
+## What we use
 
-- **No frameworks.** No React, no Vue, no build-time magic beyond a single
-  TypeScript compile. The browser already knows how to render HTML and run
-  JavaScript; we don't add a layer that has to be learned, updated, and
-  patched for the privilege of standing between us and the platform.
-- **Pure HTML.** Markup is content, not configuration. A page is a file you
-  can open and read. What you see in `web/public/index.html` is what the
-  browser receives.
-- **Least code possible.** Every line is a liability — to write, to read, to
-  debug, to keep working five years from now. The win is in deletion, not
-  addition. If a feature can be left out, leave it out.
+- **React.** Components let us reorganize the page without copy-pasting markup,
+  and the form is just a component with a little state. It is a tool everyone
+  knows, well supported, and it gets out of the way.
+- **Tailwind.** One theme block holds the palette and type tokens (see
+  [dazzle](dazzle.md)), and the rest is utility classes on the markup. No bespoke
+  CSS system to invent, document, and maintain.
+- **Vite.** Standard React + Tailwind dev server and build. `npm run dev` to work,
+  `npm run build` to produce the static assets that go to S3.
 
-## Static content vs. dynamic composition
+## Still less is more
 
-Prefer static content. A file on disk, uploaded once to S3 and cached at the
-edge, has no runtime, no cold start, and no way to fail under load. Compose
-dynamically only where the content genuinely depends on something the server
-knows and the file can't: the form submission talks to a Lambda because it
-must write to a database, and the Lambda URL is injected at deploy time via a
-generated `config.js` rather than hardcoded. That is the boundary — static by
-default, dynamic only where the work demands it.
+Choosing a framework is not a licence to sprawl. The values that survived the
+rethink:
 
-## AWS stack only as complex as absolutely necessary
+- **Least code that does the job.** Every line is a liability to write, read, and
+  keep working. The win is still in deletion. If a feature can be left out, leave
+  it out.
+- **Static by default.** The whole site is a built bundle uploaded once to S3 and
+  cached at the edge. It has no runtime and no way to fail under load. We reach
+  for dynamic behaviour only where the work genuinely demands it.
+- **Keep the AWS stack only as complex as necessary.** A private S3 bucket behind
+  CloudFront, one Go Lambda on a Function URL, a DynamoDB table, and the DNS and
+  certificate to make it reachable. No API Gateway where a Function URL suffices.
+  Two CloudFormation stacks exist only because CloudFront forces the ACM
+  certificate into `us-east-1`, not because we wanted two.
 
-The cloud will happily sell you more services than you need. Resist. Every
-resource added is something to provision, secure, monitor, and pay for.
+## The boundary
 
-The whole site is a private S3 bucket behind CloudFront, one Go Lambda on a
-Function URL, a DynamoDB table, and the DNS and certificate to make it
-reachable. No API Gateway where a Function URL suffices. No container
-orchestration where a single function suffices. No server where a static file
-suffices. Two CloudFormation stacks exist only because CloudFront forces the
-ACM certificate into `us-east-1` — not because we wanted two.
+Prefer static content. Compose dynamically only where the content depends on
+something the server knows and a file cannot hold. Today the application form is
+**inert**: it lives entirely in the browser and sends nothing. The backend Lambda
+and DynamoDB table are still deployed and ready, so wiring the form up later is a
+small change, not a rebuild.
 
-Complexity is a cost paid forever. Spend it only when the alternative costs
-more.
+Complexity is a cost paid forever. Spend it only when the alternative costs more.
 
-See also: [architecture](architecture.md), [frontend](frontend.md).
+See also: [architecture](architecture.md), [frontend](frontend.md),
+[dazzle](dazzle.md), [aerodynamics](aerodynamics.md).
