@@ -147,7 +147,7 @@ export function ApplicationForm() {
           kaltaista organisaatiota ole olemassa. Tämän lomakkeen täyttämällä osoitat
           kiinnostuksesi ja tukesi tällaisen toiminnan aloittamiselle.{" "}
           <a
-            href="/tietosuojaseloste.txt"
+            href="/tietosuojaseloste.html"
             target="_blank"
             rel="noopener noreferrer"
             className="font-semibold underline decoration-orange-500 underline-offset-2 hover:text-orange-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-500"
