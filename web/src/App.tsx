@@ -123,11 +123,13 @@ export default function App() {
             siitä, että malli kykenee synnyttämään todellista arvoa?
           </p>
           <p>
-            Ehkä he perustavat oppimillaan tiedoilla uuden yrityksen, siirtyvät muualle työelämään tai
-            käynnistävät jotakin täysin omaa.{" "}
-            <strong className="font-semibold">Juuri siinä ajatus kirkastuu.</strong> Unioni ei
-            edellytä lojaalisuutta, vaan mahdollistaa oppimisen, työnteon ja yksilön itsenäisyyden.
-            Dynaaminen yhteiskunta hyötyy siitä, että ihmiset nousevat liikkeelle.
+            Ehkä he perustavat oppimansa turvin uuden yrityksen, siirtyvät muualle työelämään tai
+            lähtevät kokeilemaan jotakin aivan omaa. Juuri sitä varten tämä paikka on olemassa. Unioni
+            ei vaadi keneltäkään uskollisuutta, vaan antaa työn, taidon ja vapauden jatkaa omaa
+            matkaansa.{" "}
+            <strong className="font-semibold">
+              Mitä useampi lähtee täältä taitavampana kuin tuli, sitä vahvempi on koko maa.
+            </strong>
           </p>
         </div>
       </Section>
